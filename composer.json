@@ -1,6 +1,6 @@
 {
     "name": "benhilger/recurring-holidays",
-    "description": "This package allows for the definition of recurring holidays with simple of complex parameters. It also can convert to their observed dates as required",
+    "description": "This package allows for the definition of recurring holidays with simple or complex parameters. It also can convert to their observed dates as required",
     "type": "library",
     "autoload": {
         "psr-4": {
