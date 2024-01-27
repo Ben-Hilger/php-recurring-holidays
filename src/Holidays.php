@@ -3,8 +3,28 @@
 namespace Benhilger\NationalHolidays;
 
 use DateTime;
+use BenHilger\NationalHolidays\HolidayDate;
 
-abstract class HolidayCalendarGroup {
+class Holidays {
+
+    /**
+     * @var HolidayDate[] $holidays
+     *  */
+    private $holidays = [];
+
+    /**
+     * Adds a holiday, or list of holidays, to the list of holidays to check against
+     *
+     * @param HolidayDate|array $holiday
+     * @return void
+     */
+    function addHolidays(HolidayDate|array $holiday) {
+        if (is_array($holiday)) {
+            array_push($this->holidays, ...$holiday);
+        } else {
+            $this->holidays[] = $holiday;
+        }
+    }
 
     /** 
     * Generates the holidays for the given year. 
@@ -19,17 +39,16 @@ abstract class HolidayCalendarGroup {
     * */ 
     function getHolidays(int $year, bool $observed = false): array {
         $nationalHolidays = [];
-        $nationalHolidayFormats = $this->getHolidayFormats($year); 
-        foreach($nationalHolidayFormats as $holiday => $dateFormat) {
-
+        $nationalHolidayFormats = $this->holidays;
+        foreach($nationalHolidayFormats as $dateFormat) {
             if (!isset($dateFormat)) {
-                error_log("No format was given for holiday: $holiday, ignoring.");
+                error_log("No format was given, ignoring.");
                 continue;
             }
 
             $timestamp = $dateFormat->getTimestamp($year);
-            if (!isset($timestamp)) {
-                error_log("Unable to get the timestamp of the date for holiday: $holiday, ignoring.");
+            if (is_null($timestamp)) {
+                error_log("Unable to get the timestamp of the date ignoring.");
                 continue;
             } 
             $dateToAdd = new DateTime();
@@ -39,7 +58,7 @@ abstract class HolidayCalendarGroup {
             if ($observed) {
                 $dateToAdd = $this->convertToObservedHoliday($dateToAdd);
             }
-            $nationalHolidays[$holiday] = $dateToAdd;
+            $nationalHolidays[] = $dateToAdd;
         }
 
         return $nationalHolidays;
@@ -85,30 +104,11 @@ abstract class HolidayCalendarGroup {
         $year = intval(date("Y", $date->getTimestamp()));
         $date->setTime(0, 0, 0, 0);
         
-        $nationalHolidays = $this->getHolidays($year, 
-                                                    observed: $observed);
+        $nationalHolidays = $this->getHolidays($year, observed: $observed);
         $matchedDates = array_filter($nationalHolidays, 
             function (DateTime $value) use ($date) {
                 return $value == $date;
             }, ARRAY_FILTER_USE_BOTH);
         return count($matchedDates) > 0;
     }
-
-    /**
-    * Defined the formats of the holiday dates.
-    *
-    * @param int $year  
-    * 
-    * @return array
-    * 
-    * Expected Format: Map<string, T extends HolidayDate>
-    * Example:
-    *   [
-    *       "day1" => new HolidayDateSimple("YYYY-01-01"),
-    *       "day2" => new HolidayDateComplex(1, "first day of this month")
-    *   ]
-    *
-    */
-    abstract protected function getHolidayFormats(int $year): array;
-
 }

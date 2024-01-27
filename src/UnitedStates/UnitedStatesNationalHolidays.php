@@ -4,59 +4,55 @@ namespace Benhilger\NationalHolidays\UnitedStates;
 
 use Benhilger\NationalHolidays\HolidayCalendarGroup;
 use DateTime;
-use Benhilger\NationalHolidays\HolidayDateSimple;
-use Benhilger\NationalHolidays\HolidayDateComplex;
+use Benhilger\NationalHolidays\HolidayDate;
 use Benhilger\NationalHolidays\UnitedStates\UnitedStatesHolidays;
+use Exception;
 
-class UnitedStatesNationalHolidays extends HolidayCalendarGroup {
+class UnitedStatesNationalHolidays {
 
 
     private array $holidays = [];
 
-    function __construct() {
-        $this->holidays = [
-            UnitedStatesHolidays::NewYears->name => 
-                new HolidayDateSimple("YYYY-01-01"),
-            UnitedStatesHolidays::MartinLutherKingBirthday->name => 
-                new HolidayDateComplex(1, 'third monday of this month'),
-            UnitedStatesHolidays::WashingtonBirthday->name => 
-                new HolidayDateComplex(2, 'third monday of this month'),
-            UnitedStatesHolidays::MemorialDay->name =>
-                new HolidayDateComplex(5, 'last monday of this month'),
-            UnitedStatesHolidays::Juneteenth->name =>
-                new HolidayDateSimple("YYYY-06-19"),
-            UnitedStatesHolidays::IndependenceDay->name => 
-                new HolidayDateSimple("YYYY-07-04"),
-            UnitedStatesHolidays::LaborDay->name =>
-                new HolidayDateComplex(9, 'first monday of this month'),
-            UnitedStatesHolidays::ColumbusDay->name =>
-                new HolidayDateComplex(10, 'second monday of this month'),
-            UnitedStatesHolidays::VeteransDay->name => 
-                new HolidayDateSimple("YYYY-11-11"),
-            UnitedStatesHolidays::ThanksgivingDay->name =>
-                new HolidayDateComplex(11, 'fourth thursday of this month'),
-            UnitedStatesHolidays::ChristmasDay->name => 
-                new HolidayDateSimple("YYYY-12-25")
+    /**
+     * Returns the US national holidays for the given year
+     *
+     * @param integer $year
+     * @param bool $observed
+     * @return HolidayDate[]
+     */
+    static function getNationalHolidays(): array {
+        $holidays = [
+            HolidayDate::fromSimpleFormat("YYYY-01-01"), // New Years
+            HolidayDate::fromComplexFormat('third monday of this month', 1), // Martin Luther King Birthday
+            HolidayDate::fromComplexFormat('third monday of this month', 2), // Washington Birthday
+            HolidayDate::fromComplexFormat('last monday of this month', 5), // Memorial Day
+            HolidayDate::fromSimpleFormat("YYYY-06-19"), // Juneteenth
+            HolidayDate::fromSimpleFormat("YYYY-07-04"), // Independence Day
+            HolidayDate::fromComplexFormat("first monday of this month", 9), // Labor Day
+            HolidayDate::fromComplexFormat('second monday of this month', 10), // Columbus Day
+            HolidayDate::fromSimpleFormat("YYYY-11-11"), // Veterans Day
+            HolidayDate::fromComplexFormat('fourth thursday of this month', 11), // Thanksgiving Day
+            HolidayDate::fromSimpleFormat("YYYY-12-25"), // Chirstmas Day
+            HolidayDate::fromCallback(function ($year) {
+                $date = null;
+                if (UnitedStatesNationalHolidays::isInaugurationYear($year)) {
+                    $date = UnitedStatesNationalHolidays::getInaugurationDate($year);
+                }
+                return isset($date) ? $date->getTimestamp($year) : null;
+            }),
         ];
+        return $holidays;
     }
-    
-    function getHolidayFormats(int $year): array {
-        $allHolidays = $this->holidays;
-        if ($this->isInaugurationYear($year)) {
-            $allHolidays[UnitedStatesHolidays::InaugurationDay->name] = $this->getInaugurationDate($year); 
-        }
-        return $allHolidays;
-    }
-    
+
     /**
     * Gets the inauguration date format (YYYY-MM-DD) based on the given year
     * The inauguration date is calculated as follows:
     * January 20th, unless it falls on a Sunday, then it's the 21st
     *
     * @param int $year
-    * @return HolidayDateSimple
+    * @return HolidayDate
     */
-    private function getInaugurationDate(int $year): HolidayDateSimple {
+    private static function getInaugurationDate(int $year): HolidayDate {
         $date = new DateTime();
         $date->setDate($year, 1, 20);
         $dayOfWeek = date("w", $date->getTimestamp());   
@@ -66,7 +62,7 @@ class UnitedStatesNationalHolidays extends HolidayCalendarGroup {
         if ($dayOfWeek === $sunday) {
             $dateFormat = "YYYY-01-21";    
         } 
-        return new HolidayDateSimple($dateFormat);
+        return HolidayDate::fromSimpleFormat($dateFormat);
     }
 
     /**
@@ -75,7 +71,7 @@ class UnitedStatesNationalHolidays extends HolidayCalendarGroup {
     *
     * @param int $year
     */
-    private function isInaugurationYear(int $year): bool {
+    private static function isInaugurationYear(int $year): bool {
         $baseYear = 2025;
         return ($year - $baseYear) % 4 == 0;
     } 
