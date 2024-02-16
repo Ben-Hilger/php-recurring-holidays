@@ -6,7 +6,10 @@ use Benhilger\NationalHolidays\HolidayDateType;
 
 class HolidayDate {
 
-    private $type;
+    /**
+     * @var HolidayDateType|null
+     */
+    private ?HolidayDateType $type;
 
     private $callback;
 
@@ -40,7 +43,7 @@ class HolidayDate {
     }
 
     /**
-     * Sets a simple date with basic replacement for a given year
+     * Sets a simple date with basic replacement for a given year.
      * Year placeholder: YYYY
      * Example: YYYY-01-01
      * 
@@ -52,11 +55,12 @@ class HolidayDate {
         $this->format = $format;
         return $this;
     }
-   
+
     /**
      * Sets a complex date that support PHP strtotime functionality
      *
      * @param string $complexFormat
+     * @param int $month
      * @return HolidayDate
      */
     public function setComplexFormat(string $complexFormat, int $month): HolidayDate {

@@ -10,7 +10,7 @@ class Holidays {
     /**
      * @var HolidayDate[] $holidays
      *  */
-    private $holidays = [];
+    private array $holidays = [];
 
     /**
      * Adds a holiday, or list of holidays, to the list of holidays to check against
@@ -18,7 +18,7 @@ class Holidays {
      * @param HolidayDate|array $holiday
      * @return void
      */
-    function addHolidays(HolidayDate|array $holiday) {
+    function addHolidays(HolidayDate|array $holiday): void {
         if (is_array($holiday)) {
             array_push($this->holidays, ...$holiday);
         } else {
@@ -26,17 +26,19 @@ class Holidays {
         }
     }
 
-    /** 
-    * Generates the holidays for the given year. 
-    * If observed is true, it will return the observed dates based on
-    * the following rules:
-    * If the date falls on Saturday, the observed date will be the Friday before
-    * If the date falls on Sunday, the observed date will be the Monday after
-    *
-    * @param int $year
-    * @param bool $observed
-    * @return array
-    * */ 
+    /**
+     * Generates the holidays for the given year.
+     * If observed is true, it will return the observed dates based on
+     * the following rules:
+     * If the date falls on Saturday, the observed date will be the Friday before
+     * If the date falls on Sunday, the observed date will be the Monday after
+     *
+     * @param int $year
+     * @param bool $observed
+     * @return array
+     *
+     * @throws \Exception
+     */
     function getHolidays(int $year, bool $observed = false): array {
         $nationalHolidays = [];
         $nationalHolidayFormats = $this->holidays;
@@ -63,16 +65,18 @@ class Holidays {
 
         return $nationalHolidays;
     }
-    
+
     /**
-    * It will adjust the given date to the observed date given the following rules:
-    * If the date falls on Saturday, the observed date will be the Friday before
-    * If the date falls on Sunday, the observed date will be the Monday after
-    * Otherwise, the date stays the same
-    *
-    * @param DateTimne $date  
-    * @return DateTime
-    * */
+     * It will adjust the given date to the observed date given the following rules:
+     * If the date falls on Saturday, the observed date will be the Friday before
+     * If the date falls on Sunday, the observed date will be the Monday after
+     * Otherwise, the date stays the same
+     *
+     * @param DateTime $date
+     * @return DateTime
+     *
+     * @throws \Exception
+     */
     private function convertToObservedHoliday(DateTime $date): DateTime {
         $dayOfWeek = date("w", $date->getTimestamp());
         $sunday = "0";
